@@ -1,6 +1,66 @@
 // ========================================
 // 🚀 STARLINK MANAGEMENT SYSTEM - CLEANED VERSION
 // ========================================
+
+// ========================================
+// 🔘 MENU & TOMBOL FILTER (onOpen)
+// ========================================
+
+/**
+ * Tambah menu custom "⚙️ Filter" ke toolbar spreadsheet saat dibuka
+ */
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('⚙️ Filter')
+    .addItem('✅ Aktifkan Filter (A–Y)', 'activateAllFilters')
+    .addItem('🚫 Hapus Semua Filter', 'clearAllFilters')
+    .addToUi();
+}
+
+/**
+ * Aktifkan filter A–Y pada semua sheet utama client
+ */
+function activateAllFilters() {
+  var sheetNames = ['Client Aktif', 'Client Non Aktif', 'Client Lepas', 'Client Tertagih', 'Akun Kosong'];
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activated = [];
+
+  sheetNames.forEach(function(name) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) return;
+    if (sheet.getFilter()) sheet.getFilter().remove();
+    sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+    activated.push(name);
+  });
+
+  SpreadsheetApp.getUi().alert('✅ Filter diaktifkan pada:\n' + activated.join('\n'));
+}
+
+/**
+ * Hapus semua filter pada semua sheet utama client
+ */
+function clearAllFilters() {
+  var sheetNames = ['Client Aktif', 'Client Non Aktif', 'Client Lepas', 'Client Tertagih', 'Akun Kosong'];
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var cleared = [];
+
+  sheetNames.forEach(function(name) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) return;
+    if (sheet.getFilter()) {
+      sheet.getFilter().remove();
+      cleared.push(name);
+    }
+  });
+
+  SpreadsheetApp.getUi().alert(
+    cleared.length > 0
+      ? '🚫 Filter dihapus dari:\n' + cleared.join('\n')
+      : 'ℹ️ Tidak ada filter aktif di sheet manapun.'
+  );
+}
+
+// ========================================
 // UPDATED: Cleaned unused functions + Enhanced with Auto Filter for Today's Data
 // New Column Structure:
 // I = KIT Number | J = Serial Number | K = Tanggal Jatuh Tempo
