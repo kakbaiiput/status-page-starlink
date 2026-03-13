@@ -12,8 +12,11 @@
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('⚙️ Filter')
-    .addItem('✅ Aktifkan Filter (A–Y)', 'activateAllFilters')
-    .addItem('🚫 Hapus Semua Filter', 'clearAllFilters')
+    .addItem('✅ Aktifkan Filter (A–Y) — Semua Sheet', 'activateAllFilters')
+    .addItem('🚫 Hapus Filter — Semua Sheet', 'clearAllFilters')
+    .addSeparator()
+    .addItem('✅ Aktifkan Filter — Client Aktif', 'activateFilterClientAktif')
+    .addItem('🚫 Hapus Filter — Client Aktif', 'clearFilterClientAktif')
     .addToUi();
 }
 
@@ -58,6 +61,31 @@ function clearAllFilters() {
       ? '🚫 Filter dihapus dari:\n' + cleared.join('\n')
       : 'ℹ️ Tidak ada filter aktif di sheet manapun.'
   );
+}
+
+/**
+ * Aktifkan filter A–Y khusus sheet Client Aktif
+ */
+function activateFilterClientAktif() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  SpreadsheetApp.getUi().alert('✅ Filter diaktifkan pada sheet Client Aktif.');
+}
+
+/**
+ * Hapus filter khusus sheet Client Aktif
+ */
+function clearFilterClientAktif() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
+  if (sheet.getFilter()) {
+    sheet.getFilter().remove();
+    SpreadsheetApp.getUi().alert('🚫 Filter dihapus dari sheet Client Aktif.');
+  } else {
+    SpreadsheetApp.getUi().alert('ℹ️ Tidak ada filter aktif di sheet Client Aktif.');
+  }
 }
 
 // ========================================
