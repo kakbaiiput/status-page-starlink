@@ -4384,7 +4384,7 @@ function generateWhatsAppLink(nama, nomorWA, kitNumber, serialNumber, paket, jat
       var kitItem = kitArray[j] || kitArray[0] || 'N/A';
       var serialItem = serialArray[j] || serialArray[0] || 'N/A';
       var paketItem = paketArray[j] || paketArray[0] || 'N/A';
-      kitLines.push(`   ✅ KIT: ${kitItem} | SN: ${serialItem} (${paketItem})`);
+      kitLines.push(`   ✅ KIT: ${kitItem} (${paketItem})`);
     }
 
     kitInfo = kitLines.join('\n');
