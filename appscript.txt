@@ -5801,13 +5801,13 @@ function getAllClientsByStatus() {
           if (reminderText) {
             if (reminderUrl) clientData.waLink = reminderUrl;
             
-            if (reminderText.includes('💀 Warning Reminder')) {
+            if (reminderText.includes('💀')) {
               allData.warningReminder.push(clientData);
-            } else if (reminderText.includes('🚨 Reminder H-1')) {
+            } else if (reminderText.includes('🚨')) {
               allData.reminderH1.push(clientData);
-            } else if (reminderText.includes('⚠️ Reminder H-2')) {
+            } else if (reminderText.includes('⚠️')) {
               allData.reminderH2.push(clientData);
-            } else if (reminderText.includes('📅 Reminder H-3')) {
+            } else if (reminderText.includes('📅')) {
               allData.reminderH3.push(clientData);
             }
           }
