@@ -17,6 +17,13 @@ function onOpen() {
     .addSeparator()
     .addItem('✅ Aktifkan Filter — Client Aktif', 'activateFilterClientAktif')
     .addItem('🚫 Hapus Filter — Client Aktif', 'clearFilterClientAktif')
+    .addSeparator()
+    .addItem('🔶 Filter (SEGERA)', 'filterSegera')
+    .addItem('🔵 Filter (PROSES)', 'filterProses')
+    .addItem('🔶 Filter (SEGERA only)', 'filterSegeraOnly')
+    .addItem('🔴 Filter (JATUH TEMPO)', 'filterJatuhTempo')
+    .addSeparator()
+    .addItem('🟢 Filter (READY)', 'filterReady')
     .addToUi();
 }
 
@@ -86,6 +93,89 @@ function clearFilterClientAktif() {
   } else {
     SpreadsheetApp.getUi().alert('ℹ️ Tidak ada filter aktif di sheet Client Aktif.');
   }
+}
+
+// ========================================
+// 🔍 COLUMN FILTER FUNCTIONS — Client Aktif
+// ========================================
+
+/**
+ * Helper: pastikan filter aktif & bersih di sheet Client Aktif
+ */
+function _prepareClientAktifFilter() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return null; }
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  return sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+}
+
+/**
+ * 🔶 Filter SEGERA — tampilkan hanya baris dengan nilai "SEGERA" di kolom W
+ */
+function filterSegera() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('SEGERA').build();
+  filter.setColumnFilterCriteria(COLUMNS.LABEL_SEGERA + 1, criteria); // W = col 23
+  SpreadsheetApp.getUi().alert('🔶 Filter SEGERA aktif di kolom W (Client Aktif).');
+}
+
+/**
+ * 🔵 Filter PROSES — tampilkan hanya baris dengan nilai "PROSES" di kolom V
+ */
+function filterProses() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('PROSES').build();
+  filter.setColumnFilterCriteria(COLUMNS.LABEL_PROSES + 1, criteria); // V = col 22
+  SpreadsheetApp.getUi().alert('🔵 Filter PROSES aktif di kolom V (Client Aktif).');
+}
+
+/**
+ * 🔶 Filter SEGERA only — SEGERA di kolom W + sembunyikan PROSES di kolom V
+ */
+function filterSegeraOnly() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  // Tampilkan SEGERA di kolom W
+  var criteriaW = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('SEGERA').build();
+  filter.setColumnFilterCriteria(COLUMNS.LABEL_SEGERA + 1, criteriaW); // W = col 23
+  // Sembunyikan PROSES di kolom V (uncheck PROSES)
+  var criteriaV = SpreadsheetApp.newFilterCriteria().setHiddenValues(['PROSES']).build();
+  filter.setColumnFilterCriteria(COLUMNS.LABEL_PROSES + 1, criteriaV); // V = col 22
+  SpreadsheetApp.getUi().alert('🔶 Filter SEGERA only aktif: SEGERA (kolom W) + PROSES disembunyikan (kolom V).');
+}
+
+/**
+ * 🔴 Filter JATUH TEMPO — tampilkan hanya baris dengan nilai "JATUH TEMPO" di kolom U
+ */
+function filterJatuhTempo() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('JATUH TEMPO').build();
+  filter.setColumnFilterCriteria(COLUMNS.LABEL_JATUH_TEMPO + 1, criteria); // U = col 21
+  SpreadsheetApp.getUi().alert('🔴 Filter JATUH TEMPO aktif di kolom U (Client Aktif).');
+}
+
+/**
+ * 🟢 Filter READY — tampilkan hanya baris dengan nilai "READY" di kolom O
+ */
+function filterReady() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
+  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('READY').build();
+  filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
+  SpreadsheetApp.getUi().alert('🟢 Filter READY aktif di kolom O (Client Aktif).');
 }
 
 // ========================================
