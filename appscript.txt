@@ -4907,6 +4907,8 @@ function reactivateFilter(sheet) {
   sheet.getFilter() && sheet.getFilter().remove();
   rangeToFilter.createFilter();
   Logger.log("✅ Filter dari kolom A sampai Y diaktifkan kembali.");
+  _sortByJatuhTempo(sheet);
+  Logger.log("✅ Data diurutkan A–Z berdasarkan Tanggal Jatuh Tempo (kolom K).");
 }
 
 // ========================================
