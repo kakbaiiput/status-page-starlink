@@ -69,6 +69,29 @@ function _sortByJatuhTempo(sheet) {
 }
 
 /**
+ * Helper: format kolom S, U, V, W, X → font size 12, bold, warna dark blue 3 (#1f497d)
+ */
+function _formatColumnsStyle(sheet) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+  var darkBlue3 = '#1f497d';
+  var cols = [
+    COLUMNS.TIPE_PELANGGAN + 1,  // S = 19
+    COLUMNS.LABEL_JATUH_TEMPO + 1, // U = 21
+    COLUMNS.LABEL_PROSES + 1,    // V = 22
+    COLUMNS.LABEL_SEGERA + 1,    // W = 23
+    COLUMNS.LABEL_OBSERVASI + 1  // X = 24
+  ];
+  cols.forEach(function(col) {
+    sheet.getRange(2, col, lastRow - 1, 1)
+      .setFontSize(12)
+      .setFontWeight('bold')
+      .setFontColor(darkBlue3);
+  });
+  Logger.log('✅ Format kolom S,U,V,W,X: size 12, bold, dark blue 3 diterapkan.');
+}
+
+/**
  * Helper: siapkan sheet Client Aktif (reset filter + buat baru), return {sheet, filter}
  */
 function _prepareClientAktifFilter() {
@@ -4909,6 +4932,7 @@ function reactivateFilter(sheet) {
   Logger.log("✅ Filter dari kolom A sampai Y diaktifkan kembali.");
   _sortByJatuhTempo(sheet);
   Logger.log("✅ Data diurutkan A–Z berdasarkan Tanggal Jatuh Tempo (kolom K).");
+  _formatColumnsStyle(sheet);
 }
 
 // ========================================
