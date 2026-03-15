@@ -106,12 +106,15 @@ function _applyZebraBanding(sheet) {
   // Hapus banding lama jika ada
   sheet.getBandings().forEach(function(b) { b.remove(); });
 
-  // Terapkan banding baru: baris ganjil putih, baris genap light blue 3
+  // Terapkan banding baru: header dark blue 3, baris ganjil putih, baris genap light blue 3
   sheet.getRange(1, 1, lastRow, lastCol)
-    .applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, false, false)
+    .applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, true, false)
     .setHeaderRowColor('#1f497d')
     .setFirstRowColor('#ffffff')
     .setSecondRowColor('#cfe2f3');
+
+  // Set eksplisit background header agar pasti teraplikasi
+  sheet.getRange(1, 1, 1, lastCol).setBackground('#1f497d');
 
   Logger.log('✅ Zebra banding diterapkan pada sheet: ' + sheet.getName());
 }
