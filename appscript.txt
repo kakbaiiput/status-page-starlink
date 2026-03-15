@@ -12,11 +12,8 @@
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('⚙️ Filter')
-    .addItem('✅ Aktifkan Filter (A–Y) — Semua Sheet', 'activateAllFilters')
-    .addItem('🚫 Hapus Filter — Semua Sheet', 'clearAllFilters')
-    .addSeparator()
-    .addItem('✅ Aktifkan Filter — Client Aktif', 'activateFilterClientAktif')
-    .addItem('🚫 Hapus Filter — Client Aktif', 'clearFilterClientAktif')
+    .addItem('🔄 Reset & Aktifkan Filter — Semua Sheet', 'resetAndActivateAllFilters')
+    .addItem('🔄 Reset & Aktifkan Filter — Client Aktif', 'resetAndActivateFilterClientAktif')
     .addSeparator()
     .addItem('🔶 Filter (SEGERA)', 'filterSegera')
     .addItem('🔵 Filter (PROSES)', 'filterProses')
@@ -28,9 +25,9 @@ function onOpen() {
 }
 
 /**
- * Aktifkan filter A–Y pada semua sheet utama client
+ * Reset (clear) lalu aktifkan filter semua kolom pada semua sheet utama client
  */
-function activateAllFilters() {
+function resetAndActivateAllFilters() {
   var sheetNames = ['Client Aktif', 'Client Non Aktif', 'Client Lepas', 'Client Tertagih', 'Akun Kosong'];
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var activated = [];
@@ -43,56 +40,18 @@ function activateAllFilters() {
     activated.push(name);
   });
 
-  SpreadsheetApp.getUi().alert('✅ Filter diaktifkan pada:\n' + activated.join('\n'));
+  SpreadsheetApp.getUi().alert('🔄 Filter direset & diaktifkan pada:\n' + activated.join('\n'));
 }
 
 /**
- * Hapus semua filter pada semua sheet utama client
+ * Reset (clear) lalu aktifkan filter semua kolom khusus sheet Client Aktif
  */
-function clearAllFilters() {
-  var sheetNames = ['Client Aktif', 'Client Non Aktif', 'Client Lepas', 'Client Tertagih', 'Akun Kosong'];
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var cleared = [];
-
-  sheetNames.forEach(function(name) {
-    var sheet = ss.getSheetByName(name);
-    if (!sheet) return;
-    if (sheet.getFilter()) {
-      sheet.getFilter().remove();
-      cleared.push(name);
-    }
-  });
-
-  SpreadsheetApp.getUi().alert(
-    cleared.length > 0
-      ? '🚫 Filter dihapus dari:\n' + cleared.join('\n')
-      : 'ℹ️ Tidak ada filter aktif di sheet manapun.'
-  );
-}
-
-/**
- * Aktifkan filter A–Y khusus sheet Client Aktif
- */
-function activateFilterClientAktif() {
+function resetAndActivateFilterClientAktif() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
   if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
   if (sheet.getFilter()) sheet.getFilter().remove();
   sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
-  SpreadsheetApp.getUi().alert('✅ Filter diaktifkan pada sheet Client Aktif.');
-}
-
-/**
- * Hapus filter khusus sheet Client Aktif
- */
-function clearFilterClientAktif() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
-  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
-  if (sheet.getFilter()) {
-    sheet.getFilter().remove();
-    SpreadsheetApp.getUi().alert('🚫 Filter dihapus dari sheet Client Aktif.');
-  } else {
-    SpreadsheetApp.getUi().alert('ℹ️ Tidak ada filter aktif di sheet Client Aktif.');
-  }
+  SpreadsheetApp.getUi().alert('🔄 Filter direset & diaktifkan pada sheet Client Aktif.');
 }
 
 // ========================================
@@ -100,82 +59,88 @@ function clearFilterClientAktif() {
 // ========================================
 
 /**
- * Helper: pastikan filter aktif & bersih di sheet Client Aktif
+ * Helper: sort A–Z berdasarkan Tanggal Jatuh Tempo (kolom K) pada data rows
+ */
+function _sortByJatuhTempo(sheet) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+  sheet.getRange(2, 1, lastRow - 1, COLUMNS.TOMBOL_WHATSAPP + 1)
+    .sort({ column: COLUMNS.JATUH_TEMPO + 1, ascending: true }); // K = col 11
+}
+
+/**
+ * Helper: siapkan sheet Client Aktif (reset filter + buat baru), return {sheet, filter}
  */
 function _prepareClientAktifFilter() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
   if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return null; }
   if (sheet.getFilter()) sheet.getFilter().remove();
-  return sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  return { sheet: sheet, filter: filter };
 }
 
 /**
- * 🔶 Filter SEGERA — tampilkan hanya baris dengan nilai "SEGERA" di kolom W
+ * 🔶 Filter SEGERA — tampilkan hanya baris dengan nilai "SEGERA" di kolom W + sort Jatuh Tempo
  */
 function filterSegera() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
-  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
-  if (sheet.getFilter()) sheet.getFilter().remove();
-  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
   var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('SEGERA').build();
-  filter.setColumnFilterCriteria(COLUMNS.LABEL_SEGERA + 1, criteria); // W = col 23
-  SpreadsheetApp.getUi().alert('🔶 Filter SEGERA aktif di kolom W (Client Aktif).');
+  result.filter.setColumnFilterCriteria(COLUMNS.LABEL_SEGERA + 1, criteria); // W = col 23
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('🔶 Filter SEGERA aktif di kolom W + diurutkan A–Z Jatuh Tempo.');
 }
 
 /**
- * 🔵 Filter PROSES — tampilkan hanya baris dengan nilai "PROSES" di kolom V
+ * 🔵 Filter PROSES — tampilkan hanya baris dengan nilai "PROSES" di kolom V + sort Jatuh Tempo
  */
 function filterProses() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
-  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
-  if (sheet.getFilter()) sheet.getFilter().remove();
-  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
   var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('PROSES').build();
-  filter.setColumnFilterCriteria(COLUMNS.LABEL_PROSES + 1, criteria); // V = col 22
-  SpreadsheetApp.getUi().alert('🔵 Filter PROSES aktif di kolom V (Client Aktif).');
+  result.filter.setColumnFilterCriteria(COLUMNS.LABEL_PROSES + 1, criteria); // V = col 22
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('🔵 Filter PROSES aktif di kolom V + diurutkan A–Z Jatuh Tempo.');
 }
 
 /**
- * 🔶 Filter SEGERA only — SEGERA di kolom W + sembunyikan PROSES di kolom V
+ * 🔶 Filter SEGERA only — SEGERA di kolom W + sembunyikan PROSES di kolom V + sort Jatuh Tempo
  */
 function filterSegeraOnly() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
-  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
-  if (sheet.getFilter()) sheet.getFilter().remove();
-  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
   // Tampilkan SEGERA di kolom W
   var criteriaW = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('SEGERA').build();
-  filter.setColumnFilterCriteria(COLUMNS.LABEL_SEGERA + 1, criteriaW); // W = col 23
+  result.filter.setColumnFilterCriteria(COLUMNS.LABEL_SEGERA + 1, criteriaW); // W = col 23
   // Sembunyikan PROSES di kolom V (uncheck PROSES)
   var criteriaV = SpreadsheetApp.newFilterCriteria().setHiddenValues(['PROSES']).build();
-  filter.setColumnFilterCriteria(COLUMNS.LABEL_PROSES + 1, criteriaV); // V = col 22
-  SpreadsheetApp.getUi().alert('🔶 Filter SEGERA only aktif: SEGERA (kolom W) + PROSES disembunyikan (kolom V).');
+  result.filter.setColumnFilterCriteria(COLUMNS.LABEL_PROSES + 1, criteriaV); // V = col 22
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('🔶 Filter SEGERA only aktif (W=SEGERA, V tanpa PROSES) + diurutkan A–Z Jatuh Tempo.');
 }
 
 /**
- * 🔴 Filter JATUH TEMPO — tampilkan hanya baris dengan nilai "JATUH TEMPO" di kolom U
+ * 🔴 Filter JATUH TEMPO — tampilkan hanya baris dengan nilai "JATUH TEMPO" di kolom U + sort Jatuh Tempo
  */
 function filterJatuhTempo() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
-  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
-  if (sheet.getFilter()) sheet.getFilter().remove();
-  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
   var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('JATUH TEMPO').build();
-  filter.setColumnFilterCriteria(COLUMNS.LABEL_JATUH_TEMPO + 1, criteria); // U = col 21
-  SpreadsheetApp.getUi().alert('🔴 Filter JATUH TEMPO aktif di kolom U (Client Aktif).');
+  result.filter.setColumnFilterCriteria(COLUMNS.LABEL_JATUH_TEMPO + 1, criteria); // U = col 21
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('🔴 Filter JATUH TEMPO aktif di kolom U + diurutkan A–Z Jatuh Tempo.');
 }
 
 /**
- * 🟢 Filter READY — tampilkan hanya baris dengan nilai "READY" di kolom O
+ * 🟢 Filter READY — tampilkan hanya baris dengan nilai "READY" di kolom O + sort Jatuh Tempo
  */
 function filterReady() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Client Aktif');
-  if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
-  if (sheet.getFilter()) sheet.getFilter().remove();
-  var filter = sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
   var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('READY').build();
-  filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
-  SpreadsheetApp.getUi().alert('🟢 Filter READY aktif di kolom O (Client Aktif).');
+  result.filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('🟢 Filter READY aktif di kolom O + diurutkan A–Z Jatuh Tempo.');
 }
 
 // ========================================
