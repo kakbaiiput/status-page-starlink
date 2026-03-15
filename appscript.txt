@@ -38,6 +38,7 @@ function resetAndActivateAllFilters() {
     if (sheet.getFilter()) sheet.getFilter().remove();
     sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
     if (name === 'Client Aktif') _sortByJatuhTempo(sheet);
+    _applyZebraBanding(sheet);
     activated.push(name);
   });
 
@@ -53,6 +54,7 @@ function resetAndActivateFilterClientAktif() {
   if (sheet.getFilter()) sheet.getFilter().remove();
   sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
   _sortByJatuhTempo(sheet);
+  _applyZebraBanding(sheet);
   SpreadsheetApp.getUi().alert('🔄 Filter direset & diaktifkan pada sheet Client Aktif.');
 }
 
@@ -91,6 +93,27 @@ function _formatColumnsStyle(sheet) {
       .setFontColor(darkBlue3);
   });
   Logger.log('✅ Format kolom S,U,V,W,X: size 12, bold, dark blue 3 diterapkan.');
+}
+
+/**
+ * Helper: terapkan zebra banding putih & Light Blue 3 (#cfe2f3) pada sheet
+ */
+function _applyZebraBanding(sheet) {
+  var lastRow = sheet.getLastRow();
+  var lastCol = COLUMNS.TOMBOL_WHATSAPP + 1;
+  if (lastRow < 2) return;
+
+  // Hapus banding lama jika ada
+  sheet.getBandings().forEach(function(b) { b.remove(); });
+
+  // Terapkan banding baru: baris ganjil putih, baris genap light blue 3
+  sheet.getRange(1, 1, lastRow, lastCol)
+    .applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, false, false)
+    .setHeaderRowColor(null)
+    .setFirstRowColor('#ffffff')
+    .setSecondRowColor('#cfe2f3');
+
+  Logger.log('✅ Zebra banding diterapkan pada sheet: ' + sheet.getName());
 }
 
 /**
