@@ -37,6 +37,7 @@ function resetAndActivateAllFilters() {
     if (!sheet) return;
     if (sheet.getFilter()) sheet.getFilter().remove();
     sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+    if (name === 'Client Aktif') _sortByJatuhTempo(sheet);
     activated.push(name);
   });
 
@@ -51,6 +52,7 @@ function resetAndActivateFilterClientAktif() {
   if (!sheet) { SpreadsheetApp.getUi().alert('Sheet "Client Aktif" tidak ditemukan.'); return; }
   if (sheet.getFilter()) sheet.getFilter().remove();
   sheet.getRange(1, 1, sheet.getLastRow(), COLUMNS.TOMBOL_WHATSAPP + 1).createFilter();
+  _sortByJatuhTempo(sheet);
   SpreadsheetApp.getUi().alert('🔄 Filter direset & diaktifkan pada sheet Client Aktif.');
 }
 
