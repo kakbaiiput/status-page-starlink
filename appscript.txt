@@ -21,6 +21,9 @@ function onOpen() {
     .addItem('🔴 Filter (JATUH TEMPO)', 'filterJatuhTempo')
     .addSeparator()
     .addItem('🟢 Filter (READY)', 'filterReady')
+    .addItem('✅ Filter (CONFIRMED)', 'filterConfirmed')
+    .addItem('💰 Filter (PAID)', 'filterPaid')
+    .addItem('📅 Filter (PLANNED)', 'filterPlanned')
     .addToUi();
 }
 
@@ -192,6 +195,42 @@ function filterReady() {
   result.filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
   _sortByJatuhTempo(result.sheet);
   SpreadsheetApp.getUi().alert('🟢 Filter READY aktif di kolom O + diurutkan A–Z Jatuh Tempo.');
+}
+
+/**
+ * ✅ Filter CONFIRMED — tampilkan hanya baris dengan nilai "CONFIRMED" di kolom O + sort Jatuh Tempo
+ */
+function filterConfirmed() {
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
+  var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('CONFIRMED').build();
+  result.filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('✅ Filter CONFIRMED aktif di kolom O + diurutkan A–Z Jatuh Tempo.');
+}
+
+/**
+ * 💰 Filter PAID — tampilkan hanya baris dengan nilai "PAID" di kolom O + sort Jatuh Tempo
+ */
+function filterPaid() {
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
+  var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('PAID').build();
+  result.filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('💰 Filter PAID aktif di kolom O + diurutkan A–Z Jatuh Tempo.');
+}
+
+/**
+ * 📅 Filter PLANNED — tampilkan hanya baris dengan nilai "PLANNED" di kolom O + sort Jatuh Tempo
+ */
+function filterPlanned() {
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
+  var criteria = SpreadsheetApp.newFilterCriteria().whenTextEqualTo('PLANNED').build();
+  result.filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('📅 Filter PLANNED aktif di kolom O + diurutkan A–Z Jatuh Tempo.');
 }
 
 // ========================================
