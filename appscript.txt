@@ -24,6 +24,10 @@ function onOpen() {
     .addItem('✅ Filter (CONFIRMED)', 'filterConfirmed')
     .addItem('💰 Filter (PAID)', 'filterPaid')
     .addItem('📅 Filter (PLANNED)', 'filterPlanned')
+    .addSeparator()
+    .addItem('🔍 Filter (ID Transaksi)', 'filterIdTransaksi')
+    .addSeparator()
+    .addItem('🔄 Refresh WA Link', 'refreshWALink')
     .addToUi();
 }
 
@@ -231,6 +235,27 @@ function filterPlanned() {
   result.filter.setColumnFilterCriteria(COLUMNS.STATUS + 1, criteria); // O = col 15
   _sortByJatuhTempo(result.sheet);
   SpreadsheetApp.getUi().alert('📅 Filter PLANNED aktif di kolom O + diurutkan A–Z Jatuh Tempo.');
+}
+
+/**
+ * 🔍 Filter ID Transaksi — sembunyikan blank, --- 375.000 ---, --- 750.000 ---, HIGH DEMAND di kolom N
+ */
+function filterIdTransaksi() {
+  var result = _prepareClientAktifFilter();
+  if (!result) return;
+  var criteria = SpreadsheetApp.newFilterCriteria()
+    .setHiddenValues(['', '--- 375.000 ---', '--- 750.000 ---', 'HIGH DEMAND'])
+    .build();
+  result.filter.setColumnFilterCriteria(COLUMNS.TRANSACTION_ID + 1, criteria); // N = col 14
+  _sortByJatuhTempo(result.sheet);
+  SpreadsheetApp.getUi().alert('🔍 Filter ID Transaksi aktif di kolom N + diurutkan A–Z Jatuh Tempo.');
+}
+
+/**
+ * 🔄 Refresh WA Link — sama seperti kirimWhatsApp tapi tanpa kirim email
+ */
+function refreshWALink() {
+  kirimWhatsApp(true);
 }
 
 // ========================================
@@ -4222,7 +4247,7 @@ function universalSearch(searchTerm) {
 /**
  * 🔄 UPDATED: Main WhatsApp function dengan kolom mapping baru
  */
-function kirimWhatsApp() {
+function kirimWhatsApp(skipEmail) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
 
   // Hapus filter jika ada
@@ -4415,8 +4440,8 @@ function kirimWhatsApp() {
     }, logs); // ✅ Pass logs object by reference
   }
 
-  // Send consolidated email
-  sendConsolidatedEmail(logs);
+  // Send consolidated email (skip jika dipanggil dari refreshWALink)
+  if (!skipEmail) sendConsolidatedEmail(logs);
 
   // Reactivate filter
   reactivateFilter(sheet);
