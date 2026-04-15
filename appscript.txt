@@ -4440,8 +4440,9 @@ function kirimWhatsApp(skipEmail) {
     }, logs); // ✅ Pass logs object by reference
   }
 
-  // Send consolidated email (skip jika dipanggil dari refreshWALink)
-  if (!skipEmail) sendConsolidatedEmail(logs);
+  // Send consolidated email
+  // Gunakan === true agar trigger event object tidak ikut disable email
+  if (skipEmail !== true) sendConsolidatedEmail(logs);
 
   // Reactivate filter
   reactivateFilter(sheet);
